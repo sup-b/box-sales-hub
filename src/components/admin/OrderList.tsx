@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { ClipboardList } from "lucide-react";
 import { orders, formatCurrency, statusConfig, type Order } from "@/data/dummy-data";
+import OrderDetail from "./OrderDetail";
 
 const statusFilters: (Order["status"] | "all")[] = ["all", "pending", "preparing", "shipping", "completed", "cancelled"];
 const filterLabels: Record<string, string> = {
@@ -14,7 +15,12 @@ const filterLabels: Record<string, string> = {
 
 const OrderList = () => {
   const [filter, setFilter] = useState<Order["status"] | "all">("all");
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const filtered = filter === "all" ? orders : orders.filter((o) => o.status === filter);
+
+  if (selectedOrder) {
+    return <OrderDetail order={selectedOrder} onBack={() => setSelectedOrder(null)} />;
+  }
 
   return (
     <div className="animate-fade-up space-y-4">
@@ -40,9 +46,10 @@ const OrderList = () => {
       {/* Orders */}
       <div className="space-y-3">
         {filtered.map((order) => (
-          <div
+          <button
             key={order.id}
-            className="rounded-xl border border-border bg-card p-4 shadow-sm transition-shadow hover:shadow-md"
+            onClick={() => setSelectedOrder(order)}
+            className="w-full text-left rounded-xl border border-border bg-card p-4 shadow-sm transition-shadow hover:shadow-md active:scale-[0.98]"
           >
             <div className="flex items-start justify-between">
               <div>
@@ -61,7 +68,7 @@ const OrderList = () => {
               </div>
               <p className="text-sm font-bold text-primary">{formatCurrency(order.total)}</p>
             </div>
-          </div>
+          </button>
         ))}
         {filtered.length === 0 && (
           <div className="flex flex-col items-center gap-2 py-12 text-muted-foreground">

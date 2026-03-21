@@ -39,6 +39,17 @@ export const orders: Order[] = [
   { id: "DH1018", customerName: "Đặng Thanh Hà", phone: "0967 890 123", address: "34 Võ Văn Tần, Q.3, TP.HCM", total: 970000, date: "18/03/2026", status: "completed", items: 2, orderItems: [{ name: "Quần Short Kaki", size: "30", color: "Be", quantity: 1, price: 520000 }, { name: "Áo Polo Basic", size: "M", color: "Trắng", quantity: 1, price: 450000 }] },
 ];
 
+export const products: Product[] = [
+  { id: "SP001", name: "Áo Blazer Oversized", category: "Áo", size: "M", color: "Đen", price: 1290000, stock: 12, image: "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=200&h=200&fit=crop" },
+  { id: "SP002", name: "Quần Jeans Straight", category: "Quần", size: "29", color: "Xanh đậm", price: 890000, stock: 8, image: "https://images.unsplash.com/photo-1542272604-787c3835535d?w=200&h=200&fit=crop" },
+  { id: "SP003", name: "Áo Polo Basic", category: "Áo", size: "L", color: "Trắng", price: 450000, stock: 25, image: "https://images.unsplash.com/photo-1625910513413-5fc42fc5c2b4?w=200&h=200&fit=crop" },
+  { id: "SP004", name: "Túi Tote Canvas", category: "Phụ kiện", size: "Free", color: "Kem", price: 350000, stock: 3, image: "https://images.unsplash.com/photo-1544816155-12df9643f363?w=200&h=200&fit=crop" },
+  { id: "SP005", name: "Áo Khoác Denim", category: "Áo", size: "XL", color: "Xanh nhạt", price: 1150000, stock: 6, image: "https://images.unsplash.com/photo-1576995853123-5a10305d93c0?w=200&h=200&fit=crop" },
+  { id: "SP006", name: "Quần Short Kaki", category: "Quần", size: "30", color: "Be", price: 520000, stock: 15, image: "https://images.unsplash.com/photo-1591195853828-11db59a44f6b?w=200&h=200&fit=crop" },
+  { id: "SP007", name: "Mũ Bucket Hat", category: "Phụ kiện", size: "Free", color: "Đen", price: 280000, stock: 2, image: "https://images.unsplash.com/photo-1588850561407-ed78c334e67a?w=200&h=200&fit=crop" },
+  { id: "SP008", name: "Áo Sơ Mi Linen", category: "Áo", size: "M", color: "Xanh rêu", price: 680000, stock: 0, image: "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=200&h=200&fit=crop" },
+];
+
 export const weeklyRevenue = [
   { day: "T2", revenue: 4200000 },
   { day: "T3", revenue: 3800000 },
