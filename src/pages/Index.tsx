@@ -1,16 +1,29 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useState } from "react";
+import BottomNav from "@/components/admin/BottomNav";
+import Dashboard from "@/components/admin/Dashboard";
+import ProductList from "@/components/admin/ProductList";
+import OrderList from "@/components/admin/OrderList";
+import SettingsScreen from "@/components/admin/SettingsScreen";
 
-// IMPORTANT: Fully REPLACE this with your own code
-const PlaceholderIndex = () => {
-  // PLACEHOLDER: Replace this entire return statement with the user's app.
-  // The inline background color is intentionally not part of the design system.
+const screens: Record<string, React.FC> = {
+  dashboard: Dashboard,
+  products: ProductList,
+  orders: OrderList,
+  settings: SettingsScreen,
+};
+
+const Index = () => {
+  const [tab, setTab] = useState("dashboard");
+  const Screen = screens[tab];
+
   return (
-    <div className="flex min-h-screen items-center justify-center" style={{ backgroundColor: '#fcfbf8' }}>
-      <img data-lovable-blank-page-placeholder="REMOVE_THIS" src="/placeholder.svg" alt="Your app will live here!" />
+    <div className="mx-auto min-h-screen max-w-lg bg-background">
+      <main className="px-4 pb-20 pt-6">
+        <Screen />
+      </main>
+      <BottomNav active={tab} onChange={setTab} />
     </div>
   );
 };
-
-const Index = PlaceholderIndex;
 
 export default Index;
