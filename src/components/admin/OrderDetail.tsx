@@ -1,5 +1,16 @@
 import { ArrowLeft, MapPin, Phone, User, Package } from "lucide-react";
 import { formatCurrency, statusConfig, type Order } from "@/data/dummy-data";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { useState } from "react";
 import { toast } from "@/hooks/use-toast";
 
