@@ -117,12 +117,30 @@ const OrderDetail = ({ order, onBack }: OrderDetailProps) => {
       {(canAdvance || canCancel) && (
         <div className="flex gap-3 pt-1">
           {canCancel && (
-            <button
-              onClick={handleCancel}
-              className="flex-1 rounded-xl border border-destructive/30 bg-destructive/5 py-3 text-sm font-semibold text-destructive transition-colors active:scale-[0.97]"
-            >
-              Hủy đơn
-            </button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <button className="flex-1 rounded-xl border border-destructive/30 bg-destructive/5 py-3 text-sm font-semibold text-destructive transition-colors active:scale-[0.97]">
+                  Hủy đơn
+                </button>
+              </AlertDialogTrigger>
+              <AlertDialogContent className="mx-4 max-w-sm rounded-2xl">
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Hủy đơn hàng?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Bạn có chắc muốn hủy đơn #{order.id}? Hành động này không thể hoàn tác.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel className="rounded-lg">Quay lại</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleCancel}
+                    className="rounded-lg bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
+                    Xác nhận hủy
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           )}
           {canAdvance && (
             <button
