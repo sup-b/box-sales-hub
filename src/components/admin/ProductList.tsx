@@ -11,11 +11,32 @@ const ProductList = () => {
   const [allProducts, setAllProducts] = useState<Product[]>(initialProducts);
   const [selected, setSelected] = useState<Product | null>(null);
 
-  const filtered = products.filter((p) => {
+  const filtered = allProducts.filter((p) => {
     const matchSearch = p.name.toLowerCase().includes(search.toLowerCase());
     const matchCat = category === "Tất cả" || p.category === category;
     return matchSearch && matchCat;
   });
+
+  const handleUpdate = (updated: Product) => {
+    setAllProducts((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
+    setSelected(updated);
+  };
+
+  const handleDelete = (id: string) => {
+    setAllProducts((prev) => prev.filter((p) => p.id !== id));
+    setSelected(null);
+  };
+
+  if (selected) {
+    return (
+      <ProductDetail
+        product={selected}
+        onBack={() => setSelected(null)}
+        onUpdate={handleUpdate}
+        onDelete={handleDelete}
+      />
+    );
+  }
 
   return (
     <div className="animate-fade-up space-y-4">
@@ -59,7 +80,7 @@ const ProductList = () => {
       {/* Product list */}
       <div className="space-y-3">
         {filtered.map((p) => (
-          <ProductCard key={p.id} product={p} />
+          <ProductCard key={p.id} product={p} onSelect={setSelected} />
         ))}
         {filtered.length === 0 && (
           <div className="flex flex-col items-center gap-2 py-12 text-muted-foreground">
@@ -72,8 +93,11 @@ const ProductList = () => {
   );
 };
 
-const ProductCard = ({ product }: { product: Product }) => (
-  <div className="flex gap-3 rounded-xl border border-border bg-card p-3 shadow-sm transition-shadow hover:shadow-md">
+const ProductCard = ({ product, onSelect }: { product: Product; onSelect: (p: Product) => void }) => (
+  <div
+    onClick={() => onSelect(product)}
+    className="flex gap-3 rounded-xl border border-border bg-card p-3 shadow-sm transition-shadow hover:shadow-md active:scale-[0.98] cursor-pointer"
+  >
     <img
       src={product.image}
       alt={product.name}
