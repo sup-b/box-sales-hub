@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Store, Bell, Shield, LogOut, ChevronRight } from "lucide-react";
 import NotificationSettings from "./NotificationSettings";
+import StoreInfoScreen from "./StoreInfoScreen";
 
 const items = [
   { id: "store", icon: Store, label: "Thông tin cửa hàng", desc: "Tên, địa chỉ, liên hệ" },
@@ -10,6 +11,10 @@ const items = [
 
 const SettingsScreen = () => {
   const [subScreen, setSubScreen] = useState<string | null>(null);
+
+  if (subScreen === "store") {
+    return <StoreInfoScreen onBack={() => setSubScreen(null)} />;
+  }
 
   if (subScreen === "notifications") {
     return <NotificationSettings onBack={() => setSubScreen(null)} />;
