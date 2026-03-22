@@ -1,12 +1,15 @@
 import { useState } from "react";
 import { Search, Plus, Package } from "lucide-react";
-import { products, formatCurrency, type Product } from "@/data/dummy-data";
+import { products as initialProducts, formatCurrency, type Product } from "@/data/dummy-data";
+import ProductDetail from "./ProductDetail";
 
 const categories = ["Tất cả", "Áo", "Quần", "Phụ kiện"];
 
 const ProductList = () => {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("Tất cả");
+  const [allProducts, setAllProducts] = useState<Product[]>(initialProducts);
+  const [selected, setSelected] = useState<Product | null>(null);
 
   const filtered = products.filter((p) => {
     const matchSearch = p.name.toLowerCase().includes(search.toLowerCase());
