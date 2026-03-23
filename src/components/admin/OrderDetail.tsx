@@ -34,6 +34,7 @@ const OrderDetail = ({ order, onBack }: OrderDetailProps) => {
 
   const canAdvance = status !== "completed" && status !== "cancelled";
   const canCancel = status === "pending" || status === "preparing";
+  const statusAsKey = status as keyof typeof statusConfig;
 
   const handleAdvance = () => {
     const idx = statusFlow.indexOf(status);
