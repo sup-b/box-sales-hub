@@ -29,12 +29,11 @@ const nextStatusLabel: Partial<Record<OrderStatus, string>> = {
 
 const OrderDetail = ({ order, onBack }: OrderDetailProps) => {
   const updateStatus = useUpdateOrderStatus();
-  const status = order.status;
-  const cfg = statusConfig[status as keyof typeof statusConfig];
+  const status = order.status as OrderStatus;
+  const cfg = statusConfig[status];
 
   const canAdvance = status !== "completed" && status !== "cancelled";
   const canCancel = status === "pending" || status === "preparing";
-  const statusAsKey = status as keyof typeof statusConfig;
 
   const handleAdvance = () => {
     const idx = statusFlow.indexOf(status);
