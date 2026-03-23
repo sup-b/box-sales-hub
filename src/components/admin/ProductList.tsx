@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Search, Plus, Package } from "lucide-react";
-import { products as initialProducts, formatCurrency, type Product } from "@/data/dummy-data";
+import { formatCurrency } from "@/data/dummy-data";
+import { useProducts, useUpdateProduct, useDeleteProduct, type Product } from "@/hooks/use-products";
 import ProductDetail from "./ProductDetail";
 
 const categories = ["Tất cả", "Áo", "Quần", "Phụ kiện"];
@@ -8,30 +9,33 @@ const categories = ["Tất cả", "Áo", "Quần", "Phụ kiện"];
 const ProductList = () => {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("Tất cả");
-  const [allProducts, setAllProducts] = useState<Product[]>(initialProducts);
-  const [selected, setSelected] = useState<Product | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const { data: products = [], isLoading } = useProducts();
+  const updateProduct = useUpdateProduct();
+  const deleteProduct = useDeleteProduct();
 
-  const filtered = allProducts.filter((p) => {
+  const filtered = products.filter((p) => {
     const matchSearch = p.name.toLowerCase().includes(search.toLowerCase());
     const matchCat = category === "Tất cả" || p.category === category;
     return matchSearch && matchCat;
   });
 
+  const selected = products.find((p) => p.id === selectedId) ?? null;
+
   const handleUpdate = (updated: Product) => {
-    setAllProducts((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
-    setSelected(updated);
+    updateProduct.mutate(updated);
   };
 
   const handleDelete = (id: string) => {
-    setAllProducts((prev) => prev.filter((p) => p.id !== id));
-    setSelected(null);
+    deleteProduct.mutate(id);
+    setSelectedId(null);
   };
 
   if (selected) {
     return (
       <ProductDetail
         product={selected}
-        onBack={() => setSelected(null)}
+        onBack={() => setSelectedId(null)}
         onUpdate={handleUpdate}
         onDelete={handleDelete}
       />
@@ -48,7 +52,6 @@ const ProductList = () => {
         </button>
       </div>
 
-      {/* Search */}
       <div className="relative">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <input
@@ -60,7 +63,6 @@ const ProductList = () => {
         />
       </div>
 
-      {/* Category filter */}
       <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
         {categories.map((cat) => (
           <button
@@ -77,12 +79,12 @@ const ProductList = () => {
         ))}
       </div>
 
-      {/* Product list */}
       <div className="space-y-3">
-        {filtered.map((p) => (
-          <ProductCard key={p.id} product={p} onSelect={setSelected} />
+        {isLoading && <p className="text-sm text-muted-foreground text-center py-8">Đang tải...</p>}
+        {!isLoading && filtered.map((p) => (
+          <ProductCard key={p.id} product={p} onSelect={() => setSelectedId(p.id)} />
         ))}
-        {filtered.length === 0 && (
+        {!isLoading && filtered.length === 0 && (
           <div className="flex flex-col items-center gap-2 py-12 text-muted-foreground">
             <Package className="h-10 w-10" />
             <p className="text-sm">Không tìm thấy sản phẩm</p>
@@ -93,9 +95,9 @@ const ProductList = () => {
   );
 };
 
-const ProductCard = ({ product, onSelect }: { product: Product; onSelect: (p: Product) => void }) => (
+const ProductCard = ({ product, onSelect }: { product: Product; onSelect: () => void }) => (
   <div
-    onClick={() => onSelect(product)}
+    onClick={onSelect}
     className="flex gap-3 rounded-xl border border-border bg-card p-3 shadow-sm transition-shadow hover:shadow-md active:scale-[0.98] cursor-pointer"
   >
     <img

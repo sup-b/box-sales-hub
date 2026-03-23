@@ -1,53 +1,45 @@
-import { useState } from "react";
 import { ArrowLeft, ShoppingBag, Users, Smartphone, Volume2, Vibrate, MessageSquare, Star, Bell, PackageX, RotateCcw } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
+import { useNotificationSettings, useToggleNotification } from "@/hooks/use-notification-settings";
 
 interface ToggleItem {
   key: string;
   label: string;
   desc: string;
   icon: React.ElementType;
-  defaultValue: boolean;
 }
 
 const orderGroup: ToggleItem[] = [
-  { key: "newOrder", label: "Đơn hàng mới", desc: "Nhận thông báo khi có đơn hàng mới", icon: ShoppingBag, defaultValue: true },
-  { key: "lowStock", label: "Cảnh báo sắp hết hàng", desc: "Khi tồn kho dưới ngưỡng cài đặt", icon: PackageX, defaultValue: true },
-  { key: "returnCancel", label: "Yêu cầu hoàn trả/hủy đơn", desc: "Khách hàng yêu cầu đổi trả hoặc hủy", icon: RotateCcw, defaultValue: true },
+  { key: "newOrder", label: "Đơn hàng mới", desc: "Nhận thông báo khi có đơn hàng mới", icon: ShoppingBag },
+  { key: "lowStock", label: "Cảnh báo sắp hết hàng", desc: "Khi tồn kho dưới ngưỡng cài đặt", icon: PackageX },
+  { key: "returnCancel", label: "Yêu cầu hoàn trả/hủy đơn", desc: "Khách hàng yêu cầu đổi trả hoặc hủy", icon: RotateCcw },
 ];
 
 const customerGroup: ToggleItem[] = [
-  { key: "zaloMsg", label: "Tin nhắn mới từ Zalo OA", desc: "Tin nhắn từ khách qua Zalo Official", icon: MessageSquare, defaultValue: true },
-  { key: "reviews", label: "Đánh giá sản phẩm", desc: "Khách hàng để lại đánh giá mới", icon: Star, defaultValue: false },
+  { key: "zaloMsg", label: "Tin nhắn mới từ Zalo OA", desc: "Tin nhắn từ khách qua Zalo Official", icon: MessageSquare },
+  { key: "reviews", label: "Đánh giá sản phẩm", desc: "Khách hàng để lại đánh giá mới", icon: Star },
 ];
 
 const systemGroup: ToggleItem[] = [
-  { key: "push", label: "Thông báo đẩy", desc: "Hiển thị thông báo trên màn hình", icon: Bell, defaultValue: true },
-  { key: "sound", label: "Âm thanh thông báo", desc: "Phát âm thanh khi nhận thông báo", icon: Volume2, defaultValue: true },
-  { key: "vibrate", label: "Báo rung", desc: "Rung thiết bị khi nhận thông báo", icon: Vibrate, defaultValue: true },
+  { key: "push", label: "Thông báo đẩy", desc: "Hiển thị thông báo trên màn hình", icon: Bell },
+  { key: "sound", label: "Âm thanh thông báo", desc: "Phát âm thanh khi nhận thông báo", icon: Volume2 },
+  { key: "vibrate", label: "Báo rung", desc: "Rung thiết bị khi nhận thông báo", icon: Vibrate },
 ];
-
-const buildDefaults = (groups: ToggleItem[][]) => {
-  const map: Record<string, boolean> = {};
-  groups.flat().forEach((item) => (map[item.key] = item.defaultValue));
-  return map;
-};
 
 interface Props {
   onBack: () => void;
 }
 
 const NotificationSettings = ({ onBack }: Props) => {
-  const [toggles, setToggles] = useState(() =>
-    buildDefaults([orderGroup, customerGroup, systemGroup])
-  );
+  const { data: toggles = {}, isLoading } = useNotificationSettings();
+  const toggleMutation = useToggleNotification();
 
-  const toggle = (key: string) =>
-    setToggles((prev) => ({ ...prev, [key]: !prev[key] }));
+  const handleToggle = (key: string) => {
+    toggleMutation.mutate({ key, enabled: !toggles[key] });
+  };
 
   return (
     <div className="animate-fade-up space-y-5">
-      {/* Header */}
       <div className="flex items-center gap-3">
         <button
           onClick={onBack}
@@ -58,10 +50,15 @@ const NotificationSettings = ({ onBack }: Props) => {
         <h1 className="text-lg font-bold tracking-tight">Cài đặt thông báo</h1>
       </div>
 
-      {/* Groups */}
-      <ToggleGroup title="Đơn hàng & Sản phẩm" items={orderGroup} values={toggles} onToggle={toggle} />
-      <ToggleGroup title="Khách hàng" items={customerGroup} values={toggles} onToggle={toggle} />
-      <ToggleGroup title="Hệ thống" items={systemGroup} values={toggles} onToggle={toggle} />
+      {isLoading ? (
+        <p className="text-sm text-muted-foreground text-center py-8">Đang tải...</p>
+      ) : (
+        <>
+          <ToggleGroup title="Đơn hàng & Sản phẩm" items={orderGroup} values={toggles} onToggle={handleToggle} />
+          <ToggleGroup title="Khách hàng" items={customerGroup} values={toggles} onToggle={handleToggle} />
+          <ToggleGroup title="Hệ thống" items={systemGroup} values={toggles} onToggle={handleToggle} />
+        </>
+      )}
     </div>
   );
 };
@@ -97,7 +94,7 @@ const ToggleGroup = ({
             <p className="text-xs text-muted-foreground mt-0.5 leading-tight">{item.desc}</p>
           </div>
           <Switch
-            checked={values[item.key]}
+            checked={values[item.key] ?? false}
             onCheckedChange={() => onToggle(item.key)}
           />
         </div>

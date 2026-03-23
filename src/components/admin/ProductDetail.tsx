@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { ArrowLeft, Pencil, Trash2, Save, X } from "lucide-react";
-import { formatCurrency, type Product } from "@/data/dummy-data";
+import { formatCurrency } from "@/data/dummy-data";
+import { type Product } from "@/hooks/use-products";
 import { toast } from "sonner";
 import {
   AlertDialog,
@@ -54,7 +55,6 @@ const ProductDetail = ({ product, onBack, onUpdate, onDelete }: Props) => {
 
   return (
     <div className="animate-fade-up space-y-5">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <button
           onClick={onBack}
@@ -93,106 +93,59 @@ const ProductDetail = ({ product, onBack, onUpdate, onDelete }: Props) => {
         </div>
       </div>
 
-      {/* Image */}
       <div className="overflow-hidden rounded-2xl border border-border">
-        <img
-          src={product.image}
-          alt={product.name}
-          className="aspect-square w-full object-cover"
-        />
+        <img src={product.image} alt={product.name} className="aspect-square w-full object-cover" />
       </div>
 
-      {/* Info / Edit form */}
       <div className="rounded-xl border border-border bg-card p-4 space-y-4">
         {editing ? (
           <>
             <Field label="Tên sản phẩm">
-              <input
-                value={form.name}
-                onChange={(e) => set("name", e.target.value)}
-                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none ring-ring focus:ring-2"
-              />
+              <input value={form.name} onChange={(e) => set("name", e.target.value)} className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none ring-ring focus:ring-2" />
             </Field>
             <div className="grid grid-cols-2 gap-3">
               <Field label="Danh mục">
-                <select
-                  value={form.category}
-                  onChange={(e) => set("category", e.target.value)}
-                  className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none ring-ring focus:ring-2"
-                >
+                <select value={form.category} onChange={(e) => set("category", e.target.value)} className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none ring-ring focus:ring-2">
                   <option>Áo</option>
                   <option>Quần</option>
                   <option>Phụ kiện</option>
                 </select>
               </Field>
               <Field label="Giá (VND)">
-                <input
-                  type="number"
-                  value={form.price}
-                  onChange={(e) => set("price", Number(e.target.value))}
-                  className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none ring-ring focus:ring-2"
-                />
+                <input type="number" value={form.price} onChange={(e) => set("price", Number(e.target.value))} className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none ring-ring focus:ring-2" />
               </Field>
             </div>
             <div className="grid grid-cols-3 gap-3">
               <Field label="Size">
-                <input
-                  value={form.size}
-                  onChange={(e) => set("size", e.target.value)}
-                  className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none ring-ring focus:ring-2"
-                />
+                <input value={form.size} onChange={(e) => set("size", e.target.value)} className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none ring-ring focus:ring-2" />
               </Field>
               <Field label="Màu sắc">
-                <input
-                  value={form.color}
-                  onChange={(e) => set("color", e.target.value)}
-                  className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none ring-ring focus:ring-2"
-                />
+                <input value={form.color} onChange={(e) => set("color", e.target.value)} className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none ring-ring focus:ring-2" />
               </Field>
               <Field label="Tồn kho">
-                <input
-                  type="number"
-                  value={form.stock}
-                  onChange={(e) => set("stock", Number(e.target.value))}
-                  className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none ring-ring focus:ring-2"
-                />
+                <input type="number" value={form.stock} onChange={(e) => set("stock", Number(e.target.value))} className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none ring-ring focus:ring-2" />
               </Field>
             </div>
           </>
         ) : (
           <>
             <h2 className="text-lg font-bold leading-tight">{product.name}</h2>
-            <p className="text-2xl font-bold text-primary">
-              {formatCurrency(product.price)}
-            </p>
+            <p className="text-2xl font-bold text-primary">{formatCurrency(product.price)}</p>
             <div className="grid grid-cols-3 gap-3">
               <InfoChip label="Danh mục" value={product.category} />
               <InfoChip label="Size" value={product.size} />
               <InfoChip label="Màu" value={product.color} />
             </div>
             <div className="flex items-center justify-between rounded-lg bg-muted p-3">
-              <span className="text-xs font-medium text-muted-foreground">
-                Tồn kho
-              </span>
-              <span
-                className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                  product.stock === 0
-                    ? "bg-destructive/15 text-destructive"
-                    : product.stock <= 3
-                    ? "bg-warning/15 text-warning"
-                    : "bg-success/15 text-success"
-                }`}
-              >
-                {product.stock === 0
-                  ? "Hết hàng"
-                  : `${product.stock} sản phẩm`}
+              <span className="text-xs font-medium text-muted-foreground">Tồn kho</span>
+              <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${product.stock === 0 ? "bg-destructive/15 text-destructive" : product.stock <= 3 ? "bg-warning/15 text-warning" : "bg-success/15 text-success"}`}>
+                {product.stock === 0 ? "Hết hàng" : `${product.stock} sản phẩm`}
               </span>
             </div>
           </>
         )}
       </div>
 
-      {/* Delete */}
       {!editing && (
         <AlertDialog>
           <AlertDialogTrigger asChild>
@@ -210,10 +163,7 @@ const ProductDetail = ({ product, onBack, onUpdate, onDelete }: Props) => {
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel className="rounded-lg">Hủy</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={handleDelete}
-                className="rounded-lg bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              >
+              <AlertDialogAction onClick={handleDelete} className="rounded-lg bg-destructive text-destructive-foreground hover:bg-destructive/90">
                 Xóa
               </AlertDialogAction>
             </AlertDialogFooter>
@@ -224,13 +174,7 @@ const ProductDetail = ({ product, onBack, onUpdate, onDelete }: Props) => {
   );
 };
 
-const Field = ({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) => (
+const Field = ({ label, children }: { label: string; children: React.ReactNode }) => (
   <div className="space-y-1">
     <label className="text-xs font-medium text-muted-foreground">{label}</label>
     {children}

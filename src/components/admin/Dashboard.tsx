@@ -1,8 +1,13 @@
 import { TrendingUp, ShoppingBag, AlertTriangle, ArrowUpRight } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip } from "recharts";
-import { weeklyRevenue, formatCurrency, products, orders } from "@/data/dummy-data";
+import { weeklyRevenue, formatCurrency } from "@/data/dummy-data";
+import { useProducts } from "@/hooks/use-products";
+import { useOrders } from "@/hooks/use-orders";
 
 const Dashboard = () => {
+  const { data: products = [] } = useProducts();
+  const { data: orders = [] } = useOrders();
+
   const totalRevenue = orders
     .filter((o) => o.status === "completed")
     .reduce((sum, o) => sum + o.total, 0);
@@ -34,13 +39,11 @@ const Dashboard = () => {
 
   return (
     <div className="animate-fade-up space-y-5">
-      {/* Header */}
       <div>
         <p className="text-sm text-muted-foreground">Xin chào, Admin</p>
         <h1 className="text-xl font-bold tracking-tight">THE BOX — Tổng quan</h1>
       </div>
 
-      {/* Metric cards */}
       <div className="grid grid-cols-1 gap-3">
         {metrics.map((m) => (
           <div
@@ -62,7 +65,6 @@ const Dashboard = () => {
         ))}
       </div>
 
-      {/* Chart */}
       <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
         <h2 className="mb-3 text-sm font-semibold">Doanh thu tuần này</h2>
         <ResponsiveContainer width="100%" height={180}>
