@@ -1,5 +1,6 @@
 import { ArrowLeft, MapPin, Phone, User, Package } from "lucide-react";
-import { formatCurrency, statusConfig, type Order } from "@/data/dummy-data";
+import { formatCurrency, statusConfig } from "@/data/dummy-data";
+import { type Order, type OrderStatus, useUpdateOrderStatus } from "@/hooks/use-orders";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -11,7 +12,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { useState } from "react";
 import { toast } from "@/hooks/use-toast";
 
 interface OrderDetailProps {
@@ -19,16 +19,17 @@ interface OrderDetailProps {
   onBack: () => void;
 }
 
-const statusFlow: Order["status"][] = ["pending", "preparing", "shipping", "completed"];
+const statusFlow: OrderStatus[] = ["pending", "preparing", "shipping", "completed"];
 
-const nextStatusLabel: Partial<Record<Order["status"], string>> = {
+const nextStatusLabel: Partial<Record<OrderStatus, string>> = {
   pending: "Xác nhận đơn",
   preparing: "Bắt đầu giao",
   shipping: "Hoàn thành",
 };
 
 const OrderDetail = ({ order, onBack }: OrderDetailProps) => {
-  const [status, setStatus] = useState(order.status);
+  const updateStatus = useUpdateOrderStatus();
+  const status = order.status as OrderStatus;
   const cfg = statusConfig[status];
 
   const canAdvance = status !== "completed" && status !== "cancelled";
@@ -38,19 +39,18 @@ const OrderDetail = ({ order, onBack }: OrderDetailProps) => {
     const idx = statusFlow.indexOf(status);
     if (idx >= 0 && idx < statusFlow.length - 1) {
       const next = statusFlow[idx + 1];
-      setStatus(next);
+      updateStatus.mutate({ id: order.id, status: next });
       toast({ title: "Cập nhật trạng thái", description: `Đơn #${order.id} → ${statusConfig[next].label}` });
     }
   };
 
   const handleCancel = () => {
-    setStatus("cancelled");
+    updateStatus.mutate({ id: order.id, status: "cancelled" });
     toast({ title: "Đã hủy đơn", description: `Đơn #${order.id} đã bị hủy`, variant: "destructive" });
   };
 
   return (
     <div className="animate-fade-up space-y-4">
-      {/* Header */}
       <div className="flex items-center gap-3">
         <button
           onClick={onBack}
@@ -67,13 +67,12 @@ const OrderDetail = ({ order, onBack }: OrderDetailProps) => {
         </span>
       </div>
 
-      {/* Customer info */}
       <div className="rounded-xl border border-border bg-card p-4 shadow-sm space-y-3">
         <h2 className="text-sm font-semibold">Thông tin khách hàng</h2>
         <div className="space-y-2">
           <div className="flex items-center gap-2.5 text-sm">
             <User className="h-4 w-4 text-muted-foreground shrink-0" />
-            <span>{order.customerName}</span>
+            <span>{order.customer_name}</span>
           </div>
           <div className="flex items-center gap-2.5 text-sm">
             <Phone className="h-4 w-4 text-muted-foreground shrink-0" />
@@ -86,7 +85,6 @@ const OrderDetail = ({ order, onBack }: OrderDetailProps) => {
         </div>
       </div>
 
-      {/* Order items */}
       <div className="rounded-xl border border-border bg-card p-4 shadow-sm space-y-3">
         <h2 className="text-sm font-semibold flex items-center gap-2">
           <Package className="h-4 w-4 text-muted-foreground" />
@@ -113,7 +111,6 @@ const OrderDetail = ({ order, onBack }: OrderDetailProps) => {
         </div>
       </div>
 
-      {/* Status actions */}
       {(canAdvance || canCancel) && (
         <div className="flex gap-3 pt-1">
           {canCancel && (

@@ -14,7 +14,176 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      notification_settings: {
+        Row: {
+          enabled: boolean
+          id: string
+          key: string
+          updated_at: string
+        }
+        Insert: {
+          enabled?: boolean
+          id?: string
+          key: string
+          updated_at?: string
+        }
+        Update: {
+          enabled?: boolean
+          id?: string
+          key?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      order_items: {
+        Row: {
+          color: string
+          id: string
+          name: string
+          order_id: string
+          price: number
+          quantity: number
+          size: string
+        }
+        Insert: {
+          color: string
+          id?: string
+          name: string
+          order_id: string
+          price: number
+          quantity?: number
+          size: string
+        }
+        Update: {
+          color?: string
+          id?: string
+          name?: string
+          order_id?: string
+          price?: number
+          quantity?: number
+          size?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orders: {
+        Row: {
+          address: string
+          created_at: string
+          customer_name: string
+          date: string
+          id: string
+          items: number
+          phone: string
+          status: string
+          total: number
+          updated_at: string
+        }
+        Insert: {
+          address: string
+          created_at?: string
+          customer_name: string
+          date: string
+          id: string
+          items?: number
+          phone: string
+          status?: string
+          total: number
+          updated_at?: string
+        }
+        Update: {
+          address?: string
+          created_at?: string
+          customer_name?: string
+          date?: string
+          id?: string
+          items?: number
+          phone?: string
+          status?: string
+          total?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      products: {
+        Row: {
+          category: string
+          color: string
+          created_at: string
+          id: string
+          image: string
+          name: string
+          price: number
+          size: string
+          stock: number
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          color: string
+          created_at?: string
+          id: string
+          image: string
+          name: string
+          price: number
+          size: string
+          stock?: number
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          color?: string
+          created_at?: string
+          id?: string
+          image?: string
+          name?: string
+          price?: number
+          size?: string
+          stock?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      store_settings: {
+        Row: {
+          address: string
+          email: string
+          id: string
+          name: string
+          phone: string
+          representative: string
+          tax_id: string
+          updated_at: string
+        }
+        Insert: {
+          address?: string
+          email?: string
+          id?: string
+          name?: string
+          phone?: string
+          representative?: string
+          tax_id?: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string
+          email?: string
+          id?: string
+          name?: string
+          phone?: string
+          representative?: string
+          tax_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
