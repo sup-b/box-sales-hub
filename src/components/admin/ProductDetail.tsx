@@ -1,7 +1,8 @@
-import { useState } from "react";
-import { ArrowLeft, Pencil, Trash2, Save, X } from "lucide-react";
+import { useState, useRef } from "react";
+import { ArrowLeft, Pencil, Trash2, Save, X, Camera, Loader2 } from "lucide-react";
 import { formatCurrency } from "@/data/dummy-data";
 import { type Product } from "@/hooks/use-products";
+import { useProductImageUpload } from "@/hooks/use-product-image";
 import { toast } from "sonner";
 import {
   AlertDialog,
@@ -25,6 +26,21 @@ interface Props {
 const ProductDetail = ({ product, onBack, onUpdate, onDelete }: Props) => {
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({ ...product });
+  const fileRef = useRef<HTMLInputElement>(null);
+  const { upload, uploading } = useProductImageUpload();
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) { toast.error("Vui lòng chọn file ảnh"); return; }
+    try {
+      const url = await upload(file);
+      setForm((prev) => ({ ...prev, image: url }));
+      toast.success("Đã tải ảnh lên");
+    } catch {
+      toast.error("Lỗi khi tải ảnh lên");
+    }
+  };
 
   const handleSave = () => {
     if (!form.name.trim()) {
@@ -93,8 +109,20 @@ const ProductDetail = ({ product, onBack, onUpdate, onDelete }: Props) => {
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-2xl border border-border">
-        <img src={product.image} alt={product.name} className="aspect-square w-full object-cover" />
+      <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
+      <div className="relative overflow-hidden rounded-2xl border border-border">
+        <img src={editing ? form.image : product.image} alt={product.name} className="aspect-square w-full object-cover" />
+        {editing && (
+          <button
+            type="button"
+            onClick={() => fileRef.current?.click()}
+            disabled={uploading}
+            className="absolute bottom-3 right-3 flex items-center gap-1.5 rounded-lg bg-background/80 backdrop-blur px-3 py-2 text-xs font-semibold shadow-lg active:scale-95 transition-transform"
+          >
+            {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Camera className="h-4 w-4" />}
+            Đổi ảnh
+          </button>
+        )}
       </div>
 
       <div className="rounded-xl border border-border bg-card p-4 space-y-4">
