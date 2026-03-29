@@ -36,6 +36,28 @@ export const useUpdateProduct = () => {
   });
 };
 
+export type ProductInsert = {
+  id: string;
+  name: string;
+  category: string;
+  size: string;
+  color: string;
+  price: number;
+  stock: number;
+  image: string;
+};
+
+export const useAddProduct = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (product: ProductInsert) => {
+      const { error } = await supabase.from("products").insert(product);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["products"] }),
+  });
+};
+
 export const useDeleteProduct = () => {
   const qc = useQueryClient();
   return useMutation({

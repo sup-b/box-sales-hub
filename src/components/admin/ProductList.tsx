@@ -3,6 +3,7 @@ import { Search, Plus, Package } from "lucide-react";
 import { formatCurrency } from "@/data/dummy-data";
 import { useProducts, useUpdateProduct, useDeleteProduct, type Product } from "@/hooks/use-products";
 import ProductDetail from "./ProductDetail";
+import AddProduct from "./AddProduct";
 
 const categories = ["Tất cả", "Áo", "Quần", "Phụ kiện"];
 
@@ -10,6 +11,7 @@ const ProductList = () => {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("Tất cả");
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [adding, setAdding] = useState(false);
   const { data: products = [], isLoading } = useProducts();
   const updateProduct = useUpdateProduct();
   const deleteProduct = useDeleteProduct();
@@ -31,6 +33,10 @@ const ProductList = () => {
     setSelectedId(null);
   };
 
+  if (adding) {
+    return <AddProduct onBack={() => setAdding(false)} />;
+  }
+
   if (selected) {
     return (
       <ProductDetail
@@ -46,7 +52,10 @@ const ProductList = () => {
     <div className="animate-fade-up space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-bold tracking-tight">Sản phẩm</h1>
-        <button className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground shadow-sm active:scale-95 transition-transform">
+        <button
+          onClick={() => setAdding(true)}
+          className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground shadow-sm active:scale-95 transition-transform"
+        >
           <Plus className="h-4 w-4" />
           Thêm
         </button>
