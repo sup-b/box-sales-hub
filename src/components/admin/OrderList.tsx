@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { ClipboardList } from "lucide-react";
+import { ClipboardList, Plus } from "lucide-react";
 import { formatCurrency, statusConfig } from "@/data/dummy-data";
 import { useOrders, type Order, type OrderStatus } from "@/hooks/use-orders";
 import OrderDetail from "./OrderDetail";
+import AddOrder from "./AddOrder";
 
 const statusFilters: (OrderStatus | "all")[] = ["all", "pending", "preparing", "shipping", "completed", "cancelled"];
 const filterLabels: Record<string, string> = {
@@ -17,10 +18,15 @@ const filterLabels: Record<string, string> = {
 const OrderList = () => {
   const [filter, setFilter] = useState<OrderStatus | "all">("all");
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
+  const [adding, setAdding] = useState(false);
   const { data: orders = [], isLoading } = useOrders();
 
   const filtered = filter === "all" ? orders : orders.filter((o) => o.status === filter);
   const selectedOrder = orders.find((o) => o.id === selectedOrderId) ?? null;
+
+  if (adding) {
+    return <AddOrder onBack={() => setAdding(false)} />;
+  }
 
   if (selectedOrder) {
     return <OrderDetail order={selectedOrder} onBack={() => setSelectedOrderId(null)} />;
@@ -28,7 +34,13 @@ const OrderList = () => {
 
   return (
     <div className="animate-fade-up space-y-4">
-      <h1 className="text-xl font-bold tracking-tight">Đơn hàng</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-xl font-bold tracking-tight">Đơn hàng</h1>
+        <button onClick={() => setAdding(true)} className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground shadow-sm active:scale-95 transition-transform">
+          <Plus className="h-4 w-4" />
+          Tạo đơn
+        </button>
+      </div>
 
       <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
         {statusFilters.map((s) => (
