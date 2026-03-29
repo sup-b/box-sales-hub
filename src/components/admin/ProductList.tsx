@@ -46,13 +46,6 @@ const ProductList = () => {
         onDelete={handleDelete}
       />
     );
-      <ProductDetail
-        product={selected}
-        onBack={() => setSelectedId(null)}
-        onUpdate={handleUpdate}
-        onDelete={handleDelete}
-      />
-    );
   }
 
   return (
