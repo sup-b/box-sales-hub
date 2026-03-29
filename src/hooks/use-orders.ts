@@ -82,12 +82,3 @@ export const useCreateOrder = () => {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["orders"] }),
   });
 };
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: OrderStatus }) => {
-      const { error } = await supabase.from("orders").update({ status }).eq("id", id);
-      if (error) throw error;
-    },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["orders"] }),
-  });
-};
