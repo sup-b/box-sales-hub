@@ -1,7 +1,6 @@
 import { useState, useMemo } from "react";
-import { ClipboardList, Plus, Search, CalendarIcon, X } from "lucide-react";
-import { format, parse, isWithinInterval, isValid } from "date-fns";
-import { vi } from "date-fns/locale";
+import { ClipboardList, Plus, Search, CalendarIcon, X, SlidersHorizontal, Package, Clock, Truck, CheckCircle2, XCircle, ListFilter } from "lucide-react";
+import { format, parse, isValid } from "date-fns";
 import { formatCurrency, statusConfig } from "@/data/dummy-data";
 import { useOrders, type Order, type OrderStatus } from "@/hooks/use-orders";
 import OrderDetail from "./OrderDetail";
@@ -12,24 +11,37 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 
-const statusFilters: (OrderStatus | "all")[] = ["all", "pending", "preparing", "shipping", "completed", "cancelled"];
-const filterLabels: Record<string, string> = {
-  all: "Tất cả",
-  pending: "Chờ xác nhận",
-  preparing: "Đang chuẩn bị",
-  shipping: "Đang giao",
-  completed: "Hoàn thành",
-  cancelled: "Đã hủy",
-};
+type FilterKey = OrderStatus | "all";
+
+const statusMeta: { key: FilterKey; label: string; icon: React.ElementType; colorClass: string; activeClass: string }[] = [
+  { key: "all", label: "Tất cả", icon: ListFilter, colorClass: "text-primary", activeClass: "bg-primary text-primary-foreground" },
+  { key: "pending", label: "Chờ xác nhận", icon: Clock, colorClass: "text-warning", activeClass: "bg-warning/15 text-warning border-warning/30" },
+  { key: "preparing", label: "Đang chuẩn bị", icon: Package, colorClass: "text-info", activeClass: "bg-info/15 text-info border-info/30" },
+  { key: "shipping", label: "Đang giao", icon: Truck, colorClass: "text-info", activeClass: "bg-info/15 text-info border-info/30" },
+  { key: "completed", label: "Hoàn thành", icon: CheckCircle2, colorClass: "text-success", activeClass: "bg-success/15 text-success border-success/30" },
+  { key: "cancelled", label: "Đã hủy", icon: XCircle, colorClass: "text-destructive", activeClass: "bg-destructive/15 text-destructive border-destructive/30" },
+];
+
+const quickFilters = ["Mới nhất", "Giá cao đến thấp", "Giá thấp đến cao"];
 
 const OrderList = () => {
-  const [filter, setFilter] = useState<OrderStatus | "all">("all");
+  const [filter, setFilter] = useState<FilterKey>("all");
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
   const [search, setSearch] = useState("");
   const [dateFrom, setDateFrom] = useState<Date | undefined>();
   const [dateTo, setDateTo] = useState<Date | undefined>();
+  const [activeQuickFilter, setActiveQuickFilter] = useState("Mới nhất");
   const { data: orders = [], isLoading } = useOrders();
+
+  // Status counts
+  const statusCounts = useMemo(() => {
+    const counts: Record<string, number> = { all: orders.length };
+    for (const o of orders) {
+      counts[o.status] = (counts[o.status] || 0) + 1;
+    }
+    return counts;
+  }, [orders]);
 
   const filtered = useMemo(() => {
     let result = filter === "all" ? orders : orders.filter((o) => o.status === filter);
@@ -46,7 +58,6 @@ const OrderList = () => {
 
     if (dateFrom || dateTo) {
       result = result.filter((o) => {
-        // Parse Vietnamese date format dd/MM/yyyy
         const parsed = parse(o.date, "d/M/yyyy", new Date());
         if (!isValid(parsed)) return true;
         if (dateFrom && parsed < dateFrom) return false;
@@ -59,8 +70,15 @@ const OrderList = () => {
       });
     }
 
+    // Quick sort
+    if (activeQuickFilter === "Giá cao đến thấp") {
+      result = [...result].sort((a, b) => b.total - a.total);
+    } else if (activeQuickFilter === "Giá thấp đến cao") {
+      result = [...result].sort((a, b) => a.total - b.total);
+    }
+
     return result;
-  }, [orders, filter, search, dateFrom, dateTo]);
+  }, [orders, filter, search, dateFrom, dateTo, activeQuickFilter]);
 
   const selectedOrder = orders.find((o) => o.id === selectedOrderId) ?? null;
   const hasDateFilter = dateFrom || dateTo;
@@ -70,78 +88,141 @@ const OrderList = () => {
 
   return (
     <div className="animate-fade-up space-y-4">
+      {/* Header */}
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold tracking-tight">Đơn hàng</h1>
-        <button onClick={() => setAdding(true)} className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground shadow-sm active:scale-95 transition-transform">
+        <div>
+          <h1 className="text-xl font-bold tracking-tight text-foreground">Đơn hàng</h1>
+          <p className="text-xs text-muted-foreground mt-0.5">Quản lý & theo dõi đơn hàng</p>
+        </div>
+        <button
+          onClick={() => setAdding(true)}
+          className="flex items-center gap-1.5 rounded-xl bg-primary px-3.5 py-2.5 text-xs font-semibold text-primary-foreground shadow-sm active:scale-95 transition-transform"
+        >
           <Plus className="h-4 w-4" />
           Tạo đơn
         </button>
       </div>
 
-      {/* Search */}
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-        <Input
-          placeholder="Tìm theo tên, mã đơn, SĐT..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="pl-9 pr-9 h-10 rounded-xl"
-        />
-        {search && (
-          <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
-            <X className="h-4 w-4" />
-          </button>
-        )}
+      {/* Status Summary Cards */}
+      <div className="flex gap-2.5 overflow-x-auto pb-1 scrollbar-none -mx-4 px-4">
+        {statusMeta.map(({ key, label, icon: Icon, colorClass, activeClass }) => {
+          const isActive = filter === key;
+          const count = statusCounts[key] || 0;
+          return (
+            <button
+              key={key}
+              onClick={() => setFilter(key)}
+              className={cn(
+                "shrink-0 flex flex-col items-center gap-1.5 rounded-2xl border px-4 py-3 min-w-[90px] transition-all active:scale-95",
+                isActive
+                  ? activeClass
+                  : "bg-card border-border hover:border-muted-foreground/20"
+              )}
+            >
+              <Icon className={cn("h-5 w-5", isActive ? "" : colorClass)} />
+              <span className={cn("text-2xl font-bold leading-none", isActive ? "" : "text-foreground")}>
+                {count}
+              </span>
+              <span className={cn("text-[10px] font-medium leading-tight text-center", isActive ? "" : "text-muted-foreground")}>
+                {label}
+              </span>
+            </button>
+          );
+        })}
       </div>
 
-      {/* Date range */}
-      <div className="flex gap-2 items-center">
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button variant="outline" size="sm" className={cn("h-9 rounded-xl text-xs gap-1.5 flex-1", dateFrom && "text-foreground")}>
-              <CalendarIcon className="h-3.5 w-3.5" />
-              {dateFrom ? format(dateFrom, "dd/MM/yyyy") : "Từ ngày"}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="start">
-            <Calendar mode="single" selected={dateFrom} onSelect={setDateFrom} initialFocus className="p-3 pointer-events-auto" />
-          </PopoverContent>
-        </Popover>
-        <span className="text-xs text-muted-foreground">→</span>
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button variant="outline" size="sm" className={cn("h-9 rounded-xl text-xs gap-1.5 flex-1", dateTo && "text-foreground")}>
-              <CalendarIcon className="h-3.5 w-3.5" />
-              {dateTo ? format(dateTo, "dd/MM/yyyy") : "Đến ngày"}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="end">
-            <Calendar mode="single" selected={dateTo} onSelect={setDateTo} initialFocus className="p-3 pointer-events-auto" />
-          </PopoverContent>
-        </Popover>
-        {hasDateFilter && (
-          <button onClick={() => { setDateFrom(undefined); setDateTo(undefined); }} className="text-muted-foreground hover:text-foreground">
-            <X className="h-4 w-4" />
-          </button>
-        )}
+      {/* Search & Filter Bar */}
+      <div className="space-y-2.5">
+        <div className="flex gap-2">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder="Tìm kiếm sản phẩm, mã đơn hàng..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-9 pr-9 h-10 rounded-xl"
+            />
+            {search && (
+              <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                <X className="h-4 w-4" />
+              </button>
+            )}
+          </div>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                size="default"
+                className={cn(
+                  "h-10 rounded-xl gap-1.5 shrink-0",
+                  hasDateFilter && "border-primary text-primary"
+                )}
+              >
+                <SlidersHorizontal className="h-4 w-4" />
+                Bộ lọc
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-4 space-y-3" align="end">
+              <p className="text-sm font-semibold text-foreground">Lọc theo ngày</p>
+              <div className="flex gap-2 items-center">
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" size="sm" className={cn("h-9 rounded-xl text-xs gap-1.5 flex-1", dateFrom && "text-foreground")}>
+                      <CalendarIcon className="h-3.5 w-3.5" />
+                      {dateFrom ? format(dateFrom, "dd/MM/yyyy") : "Từ ngày"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar mode="single" selected={dateFrom} onSelect={setDateFrom} initialFocus className="p-3 pointer-events-auto" />
+                  </PopoverContent>
+                </Popover>
+                <span className="text-xs text-muted-foreground">→</span>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" size="sm" className={cn("h-9 rounded-xl text-xs gap-1.5 flex-1", dateTo && "text-foreground")}>
+                      <CalendarIcon className="h-3.5 w-3.5" />
+                      {dateTo ? format(dateTo, "dd/MM/yyyy") : "Đến ngày"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="end">
+                    <Calendar mode="single" selected={dateTo} onSelect={setDateTo} initialFocus className="p-3 pointer-events-auto" />
+                  </PopoverContent>
+                </Popover>
+                {hasDateFilter && (
+                  <button onClick={() => { setDateFrom(undefined); setDateTo(undefined); }} className="text-muted-foreground hover:text-foreground">
+                    <X className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
+            </PopoverContent>
+          </Popover>
+        </div>
+
+        {/* Quick Filter Chips */}
+        <div className="flex gap-2 overflow-x-auto scrollbar-none">
+          {quickFilters.map((chip) => (
+            <button
+              key={chip}
+              onClick={() => setActiveQuickFilter(chip)}
+              className={cn(
+                "shrink-0 rounded-full px-3 py-1.5 text-xs font-medium transition-colors active:scale-95 border",
+                activeQuickFilter === chip
+                  ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                  : "bg-card text-muted-foreground border-border hover:border-muted-foreground/30"
+              )}
+            >
+              {chip}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {/* Status tabs */}
-      <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
-        {statusFilters.map((s) => (
-          <button
-            key={s}
-            onClick={() => setFilter(s)}
-            className={`shrink-0 rounded-full px-3.5 py-1.5 text-xs font-medium transition-colors active:scale-95 ${
-              filter === s ? "bg-primary text-primary-foreground shadow-sm" : "bg-muted text-muted-foreground"
-            }`}
-          >
-            {filterLabels[s]}
-          </button>
-        ))}
-      </div>
+      {/* Results Count */}
+      <p className="text-xs text-muted-foreground">
+        Hiển thị <span className="font-semibold text-foreground">{filtered.length}</span> đơn hàng
+      </p>
 
-      {/* Results */}
+      {/* Order Cards */}
       <div className="space-y-3">
         {isLoading && <p className="text-sm text-muted-foreground text-center py-8">Đang tải...</p>}
         {!isLoading && filtered.map((order) => (
@@ -152,8 +233,8 @@ const OrderList = () => {
           >
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-xs text-muted-foreground">#{order.id}</p>
-                <p className="mt-0.5 text-sm font-semibold">{order.customer_name}</p>
+                <p className="text-xs text-muted-foreground font-mono">#{order.id}</p>
+                <p className="mt-0.5 text-sm font-semibold text-foreground">{order.customer_name}</p>
               </div>
               <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${statusConfig[order.status as keyof typeof statusConfig].className}`}>
                 {statusConfig[order.status as keyof typeof statusConfig].label}
